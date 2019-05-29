@@ -1,15 +1,21 @@
+import edu.princeton.cs.algs4.Stack;
 import edu.princeton.cs.algs4.StdRandom;
+
+import java.util.Iterator;
 
 public class Board {
 
     private int[][] blocks;
+    private int n;
+    private int manhattanCache = -1;
 
     public Board(int[][] blocks) {
         this.blocks = blocks;
+        this.n = blocks.length;
     }
 
     public int dimension() {
-        return blocks.length;
+        return n;
     }
 
     public int hamming() {
@@ -28,7 +34,30 @@ public class Board {
     }
 
     public int manhattan() {
-        return 0;
+        if (manhattanCache != -1) {
+            return manhattanCache;
+        }
+        int manhattan = 0;
+        for (int curY = 1; curY <= dimension(); curY++) {
+            for (int curX = 1; curX <= dimension(); curX++) {
+                int block = blocks[curY - 1][curX - 1];
+                if (block == 0) {
+                    continue;
+                }
+                int goalX, goalY;
+                if (block == 1) {
+                    goalX = 1;
+                } else if (block % dimension() != 0) {
+                    goalX = block % dimension();
+                } else {
+                    goalX = dimension();
+                }
+                goalY = ((block - 1) / dimension()) + 1;
+                manhattan += Math.abs((goalY - curY)) + Math.abs((goalX - curX));
+            }
+        }
+        manhattanCache = manhattan;
+        return manhattan;
     }
 
     public boolean isGoal() {
@@ -71,11 +100,65 @@ public class Board {
     }
 
     public Iterable<Board> neighbors() {
-        return null;
+        return () -> new Iterator<Board>() {
+
+            int blankX, blankY;
+            {
+                int[] blankBlock = getBlankBlock();
+                blankX = blankBlock[1];
+                blankY = blankBlock[0];
+            }
+
+            Stack<Board> neighbors = new Stack<>();
+            {
+                if (blankX - 1 >= 0) {
+                    Board b = copy();
+                    b.blocks[blankY][blankX] = blocks[blankY][blankX - 1];
+                    b.blocks[blankY][blankX - 1] = blocks[blankY][blankX];
+                    neighbors.push(b);
+                }
+                if (blankY - 1 >= 0) {
+                    Board b = copy();
+                    b.blocks[blankY][blankX] = blocks[blankY - 1][blankX];
+                    b.blocks[blankY - 1][blankX] = blocks[blankY][blankX];
+                    neighbors.push(b);
+                }
+                if (blankX + 1 < n) {
+                    Board b = copy();
+                    b.blocks[blankY][blankX] = blocks[blankY][blankX + 1];
+                    b.blocks[blankY][blankX + 1] = blocks[blankY][blankX];
+                    neighbors.push(b);
+                }
+                if (blankY + 1 < n) {
+                    Board b = copy();
+                    b.blocks[blankY][blankX] = blocks[blankY + 1][blankX];
+                    b.blocks[blankY + 1][blankX] = blocks[blankY][blankX];
+                    neighbors.push(b);
+                }
+            }
+
+            @Override
+            public boolean hasNext() {
+                return !neighbors.isEmpty();
+            }
+
+            @Override
+            public Board next() {
+                return neighbors.pop();
+            }
+        };
     }
 
     public String toString() {
-        return null;
+        StringBuilder s = new StringBuilder();
+        s.append(n).append("\n");
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                s.append(String.format("%2d ", blocks[i][j]));
+            }
+            s.append("\n");
+        }
+        return s.toString();
     }
 
     private Board copy() {
@@ -88,13 +171,26 @@ public class Board {
         return new Board(result);
     }
 
+    public int[] getBlankBlock() {
+        for (int i = 0; i < dimension(); i++) {
+            for (int j = 0; j < dimension(); j++) {
+                if (this.blocks[i][j] == 0) {
+                    return new int[]{i, j};
+                }
+            }
+        }
+        return new int[]{0, 0};
+    }
+
     public static void main(String[] args) {
         testHamming();
         testManhattan();
         testEquals();
+        testNeighbors();
     }
 
     private static void testHamming() {
+        System.out.println("*** Hamming ***");
         Board board1 = new Board(new int[][]{
                 new int[]{1, 2, 3},
                 new int[]{4, 5, 6},
@@ -105,6 +201,7 @@ public class Board {
     }
 
     private static void testManhattan() {
+        System.out.println("*** Manhattan ***");
         Board board1 = new Board(new int[][]{
                 new int[]{8, 2, 3},
                 new int[]{4, 0, 6},
@@ -112,9 +209,18 @@ public class Board {
         });
         int result1 = board1.manhattan();
         System.out.println(String.format("Board1: expected = %d, result = %d", 8, result1));
+
+        Board board2 = new Board(new int[][]{
+                new int[]{8, 1, 3},
+                new int[]{4, 0, 2},
+                new int[]{7, 6, 5}
+        });
+        int result2 = board2.manhattan();
+        System.out.println(String.format("Board2: expected = %d, result = %d", 10, result2));
     }
 
     private static void testEquals() {
+        System.out.println("*** Equals ***");
         Board board1 = new Board(new int[][]{
                 new int[]{8, 2, 3},
                 new int[]{4, 0, 6},
@@ -127,5 +233,17 @@ public class Board {
         });
         boolean result1 = board1.equals(board2);
         System.out.println(String.format("Expected = %b, result = %b", true, result1));
+    }
+
+    private static void testNeighbors() {
+        System.out.println("*** Neighbors ***");
+        Board board1 = new Board(new int[][]{
+                new int[]{8, 2, 3},
+                new int[]{0, 4, 6},
+                new int[]{7, 5, 1}
+        });
+        for (Board neighbor : board1.neighbors()) {
+            System.out.println(neighbor);
+        }
     }
 }
