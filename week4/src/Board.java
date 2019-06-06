@@ -38,26 +38,38 @@ public class Board {
             return manhattanCache;
         }
         int manhattan = 0;
-        for (int curY = 1; curY <= dimension(); curY++) {
-            for (int curX = 1; curX <= dimension(); curX++) {
+        for (int curY = 1; curY <= n; curY++) {
+            for (int curX = 1; curX <= n; curX++) {
                 int block = blocks[curY - 1][curX - 1];
                 if (block == 0) {
                     continue;
                 }
-                int goalX, goalY;
-                if (block == 1) {
-                    goalX = 1;
-                } else if (block % dimension() != 0) {
-                    goalX = block % dimension();
-                } else {
-                    goalX = dimension();
-                }
-                goalY = ((block - 1) / dimension()) + 1;
-                manhattan += Math.abs((goalY - curY)) + Math.abs((goalX - curX));
+                int[] goal = findGoal(block);
+                manhattan += Math.abs((goal[0] + 1 - curY)) + Math.abs((goal[1] + 1 - curX));
             }
         }
+
+
         manhattanCache = manhattan;
         return manhattan;
+    }
+
+    /**
+     * Finds goal position of element x in array.
+     * @param x
+     * @return
+     */
+    private int[] findGoal(int x) {
+        int position = 1;
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                if (position == x) {
+                    return new int[] {i, j};
+                }
+                position++;
+            }
+        }
+        return new int[] {0, 0};
     }
 
     public boolean isGoal() {
@@ -187,6 +199,7 @@ public class Board {
         testManhattan();
         testEquals();
         testNeighbors();
+        testFindGoal();
     }
 
     private static void testHamming() {
@@ -198,6 +211,13 @@ public class Board {
         });
         int result1 = board1.hamming();
         System.out.println(String.format("Board1: expected = %d, result = %d", 1, result1));
+        Board board2 = new Board(new int[][]{
+                new int[]{1, 2, 3},
+                new int[]{4, 5, 6},
+                new int[]{7, 8, 0}
+        });
+        int result2 = board2.hamming();
+        System.out.println(String.format("Board2: expected = %d, result = %d", 0, result2));
     }
 
     private static void testManhattan() {
@@ -245,5 +265,20 @@ public class Board {
         for (Board neighbor : board1.neighbors()) {
             System.out.println(neighbor);
         }
+    }
+
+    private static void testFindGoal() {
+        System.out.println("*** FindGoal ***");
+        Board board1 = new Board(new int[][]{
+                new int[]{8, 2, 3},
+                new int[]{0, 4, 6},
+                new int[]{7, 5, 1}
+        });
+        int[] goal1 = board1.findGoal(1);
+        System.out.println(String.format("Goal1: Expected = 0, 0, result = %d, %d", goal1[0], goal1[1]));
+        int[] goal2 = board1.findGoal(4);
+        System.out.println(String.format("Goal2: Expected = 1, 0, result = %d, %d", goal2[0], goal2[1]));
+        int[] goal3 = board1.findGoal(8);
+        System.out.println(String.format("Goal3: Expected = 2, 1, result = %d, %d", goal3[0], goal3[1]));
     }
 }
