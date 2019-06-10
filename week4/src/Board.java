@@ -73,20 +73,20 @@ public class Board {
     }
 
     public boolean isGoal() {
-        return hamming() == 0;
+        return this.hamming() == 0;
     }
 
     public Board twin() {
         int aX, aY;
         do {
-            aX = StdRandom.uniform(1, 10);
-            aY = StdRandom.uniform(1, 10);
-        } while (blocks[aX][aY] != 0);
+            aY = StdRandom.uniform(0, n);
+            aX = StdRandom.uniform(0, n);
+        } while (blocks[aY][aX] == 0);
         int bX, bY;
         do {
-            bX = StdRandom.uniform(1, 10);
-            bY = StdRandom.uniform(1, 10);
-        } while (blocks[bX][bY] != 0);
+            bY = StdRandom.uniform(0, n);
+            bX = StdRandom.uniform(0, n);
+        } while (blocks[bY][bX] == 0);
 
         Board newBoard = copy();
         int a = newBoard.blocks[aX][aY];
@@ -200,6 +200,7 @@ public class Board {
         testEquals();
         testNeighbors();
         testFindGoal();
+        testTwin();
     }
 
     private static void testHamming() {
@@ -280,5 +281,16 @@ public class Board {
         System.out.println(String.format("Goal2: Expected = 1, 0, result = %d, %d", goal2[0], goal2[1]));
         int[] goal3 = board1.findGoal(8);
         System.out.println(String.format("Goal3: Expected = 2, 1, result = %d, %d", goal3[0], goal3[1]));
+    }
+
+    private static void testTwin() {
+        System.out.println("*** Twin ***");
+        Board board1 = new Board(new int[][]{
+                new int[]{8, 2, 3},
+                new int[]{0, 4, 6},
+                new int[]{7, 5, 1}
+        });
+        System.out.println(board1);
+        System.out.println(board1.twin().toString());
     }
 }
