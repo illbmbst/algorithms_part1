@@ -1,4 +1,3 @@
-import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.Point2D;
 import edu.princeton.cs.algs4.RectHV;
 
@@ -21,10 +20,16 @@ public class PointSET {
     }
 
     public void insert(Point2D p) {
+        if (p == null) {
+            throw new IllegalArgumentException("p must be not null");
+        }
         set.add(p);
     }
 
     public boolean contains(Point2D p) {
+        if (p == null) {
+            throw new IllegalArgumentException("p must be not null");
+        }
         return set.contains(p);
     }
 
@@ -35,6 +40,9 @@ public class PointSET {
     }
 
     public Iterable<Point2D> range(RectHV rect) {
+        if (rect == null) {
+            throw new IllegalArgumentException("rect must be not null");
+        }
         Set<Point2D> result = new TreeSet<>();
         for (Point2D point : set) {
             if (rect.contains(point)) {
@@ -45,6 +53,9 @@ public class PointSET {
     }
 
     public Point2D nearest(Point2D p) {
+        if (p == null) {
+            throw new IllegalArgumentException("p must be not null");
+        }
         if (set.isEmpty()) {
             return null;
         }
